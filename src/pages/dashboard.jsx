@@ -22,13 +22,12 @@ const Dashboard = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        height: '100vh',
+        height: '90vh',
         backgroundColor: '#f5f5f5',
         overflow: 'hidden',
         padding: 2,
       }}
     >
-      {/* Full-width Title Card */}
       <Card
         sx={{
           width: '100%',
@@ -36,7 +35,7 @@ const Dashboard = () => {
           boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
           borderRadius: 2,
           backgroundColor: '#ffffff',
-          flexShrink: 0, // Prevent shrinking
+          flexShrink: 0,
         }}
       >
         <CardContent>
@@ -52,15 +51,13 @@ const Dashboard = () => {
           </Typography>
         </CardContent>
       </Card>
-
-      {/* Row with File Upload Button */}
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'flex-end',
           width: '100%',
           marginBottom: 2,
-          flexShrink: 0, // Prevent shrinking
+          flexShrink: 0,
         }}
       >
         <Button
@@ -73,19 +70,17 @@ const Dashboard = () => {
           Upload File
         </Button>
       </Box>
-
-      {/* Card with ag-Grid */}
       <Card
         sx={{
           flex: 1,
           width: '100%',
-          maxHeight: '60vh', // Limit the height of the card
+          maxHeight: '80vh', 
           boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
           borderRadius: 2,
           backgroundColor: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden', // Prevent scrollbars
+          overflow: 'hidden',
         }}
       >
         <CardContent
@@ -101,13 +96,13 @@ const Dashboard = () => {
             sx={{
               flex: 1,
               width: '100%',
-              overflow: 'auto', // Allow scrolling inside the grid if needed
+              overflow: 'hidden',
             }}
           >
             <AgGridReact
               rowData={gridData}
               columnDefs={gridColumns}
-              domLayout="autoHeight"
+              domLayout="normal"
             />
           </Box>
         </CardContent>
