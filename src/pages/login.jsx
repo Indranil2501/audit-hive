@@ -4,6 +4,9 @@ import { loginSuccess, logout } from '../features/auth/auth-slice';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Card, CardContent, Link, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import axiosInstance from '../api/axiosInstance';
+import apiConfig from '../api/apiConfig';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,15 +17,19 @@ const Login = () => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Hardcoded credentials for login
-    if (email === 'admin@example.com' && password === 'admin') {
-      dispatch(loginSuccess({ email }));
+    try {
+      const response = await axiosInstance.post(apiConfig.login, {
+        email,
+        password,
+      });
+      dispatch(loginSuccess(response.data));
       navigate('/dashboard');
-    } else {
-      alert('Invalid credentials');
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Invalid credentials. Please try again.');
     }
   };
 
@@ -35,11 +42,20 @@ const Login = () => {
     setShowResetCard(true);
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
-    alert('Password reset email sent successfully!');
-    setShowResetCard(false);
-    navigate('/login');
+
+    try {
+      const response = await axiosInstance.post(apiConfig.forgotPassword, {
+        email: resetEmail,
+      });
+      toast.success(response.data.message); // Display success message from API response
+      setShowResetCard(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      toast.error(error.response?.data?.message || 'An error occurred. Please try again.'); // Display error message
+    }
   };
 
   const handleBackToLogin = () => {

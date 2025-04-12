@@ -6,6 +6,8 @@ import GST from './pages/gst';
 import SWT from './pages/swt';
 import CIT from './pages/cit';
 import { useSelector } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -33,6 +35,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
+      <ToastContainer />
     </BrowserRouter>
   );
 }
