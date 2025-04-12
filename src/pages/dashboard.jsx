@@ -1,64 +1,68 @@
-import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography, Button, Breadcrumbs, Link, CircularProgress, IconButton, Menu, MenuItem } from '@mui/material';
-import { AgGridReact } from 'ag-grid-react';
+import { Box, Breadcrumbs, Button, Card, CardContent, CircularProgress, Link, Typography } from '@mui/material';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { AgGridReact } from 'ag-grid-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import axiosInstance from '../api/axiosInstance';
 import { toast } from 'react-toastify';
 import apiConfig from '../api/apiConfig';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import axiosInstance from '../api/axiosInstance';
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(false); // State for loader
-  const [anchorEl, setAnchorEl] = useState(null); // State for filter/sort menu
-  const open = Boolean(anchorEl);
-
-  const gridData = [
-    { id: 1, name: 'John Doe', role: 'Auditor' },
-    { id: 2, name: 'Jane Smith', role: 'Manager' },
-    { id: 3, name: 'Alice Johnson', role: 'Analyst' },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [gridData, setGridData] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [filteredCount, setFilteredCount] = useState(0);
+  const gridApiRef = useRef(null);
 
   const gridColumns = [
-    { headerName: 'ID', field: 'id', flex: 1 },
-    { headerName: 'TIN', field: 'tin', flex: 1 },
-    { headerName: 'Taxpayer Name', field: 'taxpayer_name', flex: 2 },
-    { headerName: 'Segmentation', field: 'segmentation', flex: 1 },
-    { headerName: 'Taxpayer Type', field: 'taxpayer_type', flex: 1 },
-    { headerName: 'Tax Account Number', field: 'tax_account_number', flex: 1 },
-    { headerName: 'Assessment Number', field: 'assessment_number', flex: 1 },
-    { headerName: 'Form Version', field: 'form_version', flex: 1 },
-    { headerName: 'Tax Period Year', field: 'tax_period_year', flex: 1 },
-    { headerName: 'Tax Period Month', field: 'tax_period_month', flex: 1 },
-    { headerName: 'Received Date', field: 'received_date', flex: 1 },
-    { headerName: 'Entry Date', field: 'entry_date', flex: 1 },
-    { headerName: 'Due Date', field: 'due_date', flex: 1 },
-    { headerName: 'Total Sales Income', field: 'total_sales_income', flex: 1 },
-    { headerName: 'Exempt Sales', field: 'exempt_sales', flex: 1 },
-    { headerName: 'Zero Rated Sales', field: 'zero_rated_sales', flex: 1 },
-    { headerName: 'Add Exempt and Zero Rated Sales', field: 'add_exempt_and_zero_rated_sales', flex: 1 },
-    { headerName: 'GST Taxable Sales', field: 'gst_taxable_sales', flex: 1 },
-    { headerName: 'Output Debits', field: 'output_debits', flex: 1 },
-    { headerName: 'Deferred Import Liabilities', field: 'deferred_import_liabilities', flex: 1 },
-    { headerName: 'GST Paid on Inputs', field: 'gst_paid_on_inputs', flex: 1 },
-    { headerName: 'GST Paid Exempt Sales', field: 'gst_paid_exempt_sales', flex: 1 },
-    { headerName: 'GST Paid Private', field: 'gst_paid_private', flex: 1 },
-    { headerName: 'Add Private and Exempt GST Paid', field: 'add_private_and_exempt_gst_paid', flex: 1 },
-    { headerName: 'Input Credits', field: 'input_credits', flex: 1 },
-    { headerName: 'Deduct Input Credits', field: 'deduct_input_credits', flex: 1 },
-    { headerName: 'GST Payable', field: 'gst_payable', flex: 1 },
-    { headerName: 'GST Refundable', field: 'gst_refundable', flex: 1 },
-    { headerName: 'GST Sec65A Credit Allowable', field: 'gst_sec65a_credit_allowable', flex: 1 },
-    { headerName: 'Sector Activity', field: 'sector_activity', flex: 1 },
-    { headerName: 'Province', field: 'province', flex: 1 },
-    { headerName: 'Enterprise Activity', field: 'enterprise_activity', flex: 1 },
-    { headerName: 'Enterprise Activity Code', field: 'enterprise_activity_code', flex: 1 },
-    { headerName: 'Created Date', field: 'created_date', flex: 1 },
-    { headerName: 'Updated Date', field: 'updated_date', flex: 1 },
-    { headerName: 'Created By', field: 'created_by', flex: 1 },
-    { headerName: 'Updated By', field: 'updated_by', flex: 1 },
+    { headerName: 'ID', field: 'id', width: 100 },
+    { headerName: 'TIN', field: 'tin', width: 150 },
+    { headerName: 'Taxpayer Name', field: 'taxpayer_name', width: 200 },
+    { headerName: 'Segmentation', field: 'segmentation', width: 150 },
+    { headerName: 'Taxpayer Type', field: 'taxpayer_type', width: 150 },
+    { headerName: 'Tax Account Number', field: 'tax_account_number', width: 200 },
+    { headerName: 'Assessment Number', field: 'assessment_number', width: 200 },
+    { headerName: 'Form Version', field: 'form_version', width: 150 },
+    { headerName: 'Tax Period Year', field: 'tax_period_year', width: 150 },
+    { headerName: 'Tax Period Month', field: 'tax_period_month', width: 150 },
+    { headerName: 'Received Date', field: 'received_date', width: 150 },
+    { headerName: 'Entry Date', field: 'entry_date', width: 150 },
+    { headerName: 'Due Date', field: 'due_date', width: 150 },
+    { headerName: 'Total Sales Income', field: 'total_sales_income', width: 200 },
+    { headerName: 'Exempt Sales', field: 'exempt_sales', width: 150 },
+    { headerName: 'Zero Rated Sales', field: 'zero_rated_sales', width: 200 },
+    { headerName: 'Add Exempt and Zero Rated Sales', field: 'add_exempt_and_zero_rated_sales', width: 250 },
+    { headerName: 'GST Taxable Sales', field: 'gst_taxable_sales', width: 200 },
+    { headerName: 'Output Debits', field: 'output_debits', width: 150 },
+    { headerName: 'Deferred Import Liabilities', field: 'deferred_import_liabilities', width: 250 },
+    { headerName: 'GST Paid on Inputs', field: 'gst_paid_on_inputs', width: 200 },
+    { headerName: 'GST Paid Exempt Sales', field: 'gst_paid_exempt_sales', width: 200 },
+    { headerName: 'GST Paid Private', field: 'gst_paid_private', width: 200 },
+    { headerName: 'Add Private and Exempt GST Paid', field: 'add_private_and_exempt_gst_paid', width: 250 },
+    { headerName: 'Input Credits', field: 'input_credits', width: 150 },
+    { headerName: 'Deduct Input Credits', field: 'deduct_input_credits', width: 200 },
+    { headerName: 'GST Payable', field: 'gst_payable', width: 150 },
+    { headerName: 'GST Refundable', field: 'gst_refundable', width: 150 },
+    { headerName: 'GST Sec65A Credit Allowable', field: 'gst_sec65a_credit_allowable', width: 250 },
+    { headerName: 'Sector Activity', field: 'sector_activity', width: 200 },
+    { headerName: 'Province', field: 'province', width: 150 },
+    { headerName: 'Enterprise Activity', field: 'enterprise_activity', width: 200 },
+    { headerName: 'Enterprise Activity Code', field: 'enterprise_activity_code', width: 200 },
+    { headerName: 'Created Date', field: 'created_date', width: 150 },
+    { headerName: 'Updated Date', field: 'updated_date', width: 150 },
+    { headerName: 'Created By', field: 'created_by', width: 150 },
+    { headerName: 'Updated By', field: 'updated_by', width: 150 },
   ];
+
+  const defaultColDef = {
+    sortable: true,
+    filter: 'agTextColumnFilter',
+    resizable: true,
+    floatingFilter: true,
+  };
 
   const token = useSelector((state) => state.auth.token);
 
@@ -93,19 +97,37 @@ const Dashboard = () => {
     fileInput.click();
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const fetchGridData = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `/taxdata/?type=GST&tax_period_year=2021&tax_period_month=2&pageSize=${pageSize}&pageNumber=${currentPage}`
+      );
+      setGridData(response.data.data);
+      setTotalRecords(response.data.total_records);
+      setFilteredCount(response.data.total_records);
+    } catch (error) {
+      console.error('Error fetching grid data:', error);
+      toast.error('Failed to load data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const onGridReady = (params) => {
+    gridApiRef.current = params.api;
   };
 
-  const handleFilterSortOption = (option) => {
-    console.log(`Selected option: ${option}`);
-    // Implement filter/sort logic here
-    handleMenuClose();
+  const onFilterChanged = () => {
+    if (gridApiRef.current) {
+      const filteredRows = gridApiRef.current.getDisplayedRowCount();
+      setFilteredCount(filteredRows);
+    }
   };
+
+  useEffect(() => {
+    fetchGridData();
+  }, [currentPage]);
 
   return (
     <Box
@@ -191,15 +213,27 @@ const Dashboard = () => {
                 Home
               </Link>
               <Typography color="text.primary">Dashboard</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filteredCount} of {totalRecords} rows
+              </Typography>
             </Breadcrumbs>
-            <IconButton onClick={handleMenuOpen}>
-              <FilterListIcon />
-            </IconButton>
-            <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-              <MenuItem onClick={() => handleFilterSortOption('Sort by Name')}>Sort by Name</MenuItem>
-              <MenuItem onClick={() => handleFilterSortOption('Sort by Role')}>Sort by Role</MenuItem>
-              <MenuItem onClick={() => handleFilterSortOption('Filter by Role: Auditor')}>Filter by Role: Auditor</MenuItem>
-            </Menu>
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={() => {
+                if (gridApiRef.current) {
+                  gridApiRef.current.setFilterModel(null);
+                  setFilteredCount(totalRecords);
+                }
+              }}
+              sx={{
+                textTransform: 'none',
+                marginLeft: 2,
+              }}
+            >
+              Clear Filters
+            </Button>
           </Box>
 
           {/* ag-Grid */}
@@ -207,18 +241,19 @@ const Dashboard = () => {
             className="ag-theme-alpine"
             sx={{
               flex: 1,
+              height: '100%',
               width: '100%',
-              overflow: 'hidden',
+              overflowX: 'auto',
+              overflowY: 'auto',
             }}
           >
             <AgGridReact
               rowData={gridData}
               columnDefs={gridColumns}
               domLayout="normal"
-              defaultColDef={{
-                sortable: true,
-                filter: true,
-              }}
+              defaultColDef={defaultColDef}
+              onGridReady={onGridReady}
+              onFilterChanged={onFilterChanged}
             />
           </Box>
         </CardContent>
