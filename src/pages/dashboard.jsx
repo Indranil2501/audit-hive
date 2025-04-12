@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography, Button } from '@mui/material';
+import { Box, Card, CardContent, Typography, Button, Breadcrumbs, Link } from '@mui/material';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -74,7 +74,7 @@ const Dashboard = () => {
         sx={{
           flex: 1,
           width: '100%',
-          maxHeight: '80vh', 
+          maxHeight: '80vh',
           boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
           borderRadius: 2,
           backgroundColor: '#ffffff',
@@ -91,6 +91,24 @@ const Dashboard = () => {
             padding: 2,
           }}
         >
+          {/* Breadcrumbs */}
+          <Breadcrumbs
+            sx={{
+              marginBottom: 2,
+            }}
+            aria-label="breadcrumb"
+          >
+            <Link
+              underline="hover"
+              color="inherit"
+              href="#"
+            >
+              Home
+            </Link>
+            <Typography color="text.primary">Dashboard</Typography>
+          </Breadcrumbs>
+
+          {/* ag-Grid */}
           <Box
             className="ag-theme-alpine"
             sx={{
