@@ -101,7 +101,7 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(
-        `/taxdata/?type=GST&tax_period_year=2021&tax_period_month=2&pageSize=${pageSize}&pageNumber=${currentPage}`
+        `/taxdata?type=GST&tax_period_year=2021&tax_period_month=2&pageSize=${pageSize}&pageNumber=${currentPage}`
       );
       setGridData(response.data.data);
       setTotalRecords(response.data.total_records);
@@ -213,9 +213,9 @@ const Dashboard = () => {
                 Home
               </Link>
               <Typography color="text.primary">Dashboard</Typography>
-              <Typography variant="body2" color="text.secondary">
+              {/* <Typography variant="body2" color="text.secondary">
                 {filteredCount} of {totalRecords} rows
-              </Typography>
+              </Typography> */}
             </Breadcrumbs>
             <Button
               variant="outlined"
